@@ -20,6 +20,10 @@ class AsyncpgStorage:
         async with self.pool.acquire() as conn:
             return await sql.find_one(conn, self.user_tbl, filter)
 
+    async def get_user_role(self, email):
+        async with self.pool.acquire() as conn:
+            return await sql.find_one(conn, self.user_tbl, {'email': email}, fields=['role'])
+
     async def create_user(self, data):
         data.setdefault('created_at', datetime.utcnow())
         async with self.pool.acquire() as conn:
@@ -70,3 +74,7 @@ class AsyncpgStorage:
 
     def user_session_id(self, user):
         return str(user['id'])
+
+
+
+

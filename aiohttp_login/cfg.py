@@ -60,6 +60,17 @@ DEFAULTS = {
     # next settings are initialized during `setup()`, do not set it manually
     'APP': REQUIRED,
     'STORAGE': REQUIRED,
+
+    # next is the dictionary with the following structure:
+    #       keys: certain roles (str)
+    #       values: set of forbidden API paths (set)
+    'ROLES_API_BLACK_LIST': {},
+
+    # Redis or KeyDB:
+    "CACHE": None,
+    "API_CALL_LIMIT_EXPIRATION_TIME": 60,
+
+    "ROLES_API_LIMITS": {}
 }
 
 

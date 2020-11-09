@@ -66,3 +66,7 @@ def setup(app, storage, config=None):
     router.add_route('GET', handlers.confirmation)
     router.add_route('POST', handlers.confirmation)
 
+    # === JWT token verification
+    router = add_resource('/auth/jwt_verification',
+                          name='jwt_verification')
+    router.add_route('GET', handlers.verify_token)

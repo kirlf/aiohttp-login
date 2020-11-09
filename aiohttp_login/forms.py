@@ -3,7 +3,9 @@ from functools import lru_cache
 from aiohttp_session import get_session
 from wtforms import Form, PasswordField
 from wtforms.fields.html5 import EmailField
-from wtforms.validators import Required, EqualTo, Length, Email
+from wtforms.fields import StringField
+from wtforms.validators import DataRequired, EqualTo, Length, Email
+from wtforms import validators
 from wtforms.csrf.session import SessionCSRF
 
 from .cfg import cfg
@@ -54,18 +56,30 @@ def create():
 
     class Registration(BaseForm):
         email = EmailField('Email', [
-            Required(),
+            DataRequired(),
             Email(),
         ])
         password = PasswordField('Password', [
-            Required(),
+            DataRequired(),
             Length(*cfg.PASSWORD_LEN),
             EqualTo('confirm', message=cfg.MSG_PASSWORDS_NOT_MATCH),
         ])
         confirm = PasswordField('Repeat password', [
-            Required(),
+            DataRequired(),
             Length(*cfg.PASSWORD_LEN),
         ])
+
+        name = StringField(u'Full Name', [
+            DataRequired(),
+            validators.length(max=100)])
+        surname = StringField(u'Last Name', [
+            DataRequired(),
+            validators.length(max=100)])
+        company = StringField(u'Company', [
+            DataRequired(),
+            validators.length(max=100)])
+        country = StringField(u'Country', [
+            validators.length(max=50)])
 
         async def validate(self):
             db = cfg.STORAGE
@@ -90,28 +104,28 @@ def create():
 
     class Login(BaseForm):
         email = EmailField('Email', [
-            Required(),
+            DataRequired(),
             Email(),
         ])
         password = PasswordField('Password', [
-            Required(),
+            DataRequired(),
             Length(*cfg.PASSWORD_LEN),
         ])
 
     class ResetPasswordRequest(BaseForm):
         email = EmailField('Email', [
-            Required(),
+            DataRequired(),
             Email(),
         ])
 
     class ResetPassword(BaseForm):
         password = PasswordField('New password', [
-            Required(),
+            DataRequired(),
             Length(*cfg.PASSWORD_LEN),
             EqualTo('confirm', message=cfg.MSG_PASSWORDS_NOT_MATCH),
         ])
         confirm = PasswordField('Repeat password', [
-            Required(),
+            DataRequired(),
             Length(*cfg.PASSWORD_LEN),
         ])
 
@@ -123,16 +137,16 @@ def create():
 
     class ChangePassword(BaseForm):
         cur_password = PasswordField('Current password', [
-            Required(),
+            DataRequired(),
             Length(*cfg.PASSWORD_LEN),
         ])
         new_password = PasswordField('New password', [
-            Required(),
+            DataRequired(),
             Length(*cfg.PASSWORD_LEN),
             EqualTo('confirm', message=cfg.MSG_PASSWORDS_NOT_MATCH),
         ])
         confirm = PasswordField('Repeat new password', [
-            Required(),
+            DataRequired(),
             Length(*cfg.PASSWORD_LEN),
         ])
 

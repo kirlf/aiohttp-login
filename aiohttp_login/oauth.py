@@ -6,6 +6,8 @@ Response: {
     back_url: str of None
 } or {} if error occured
 '''
+
+import os
 import logging
 from pprint import pformat
 
@@ -15,6 +17,7 @@ from aiohttp.web import HTTPFound
 
 from .cfg import cfg
 
+HOST_PATH = os.environ.get("AIOHTTP_LOGIN_HOST_PATH")
 
 log = logging.getLogger(__name__)
 
@@ -23,9 +26,14 @@ async def vkontakte(request):
     if 'error' in request.query:
         return {}
 
+    if HOST_PATH:
+        url = HOST_PATH + str(request.rel_url.with_query(None))
+    else:
+        url = str(request.url.with_query(None))
+
     common_params = {
         'client_id': cfg.VKONTAKTE_ID,
-        'redirect_uri': str(request.url.with_query(None)),
+        'redirect_uri': url,
         'v': '5.60',
     }
 
@@ -62,6 +70,8 @@ async def vkontakte(request):
         async with client.get(url) as resp:
             profile = await resp.json()
 
+    log.debug('VK profile: %s', pformat(profile))
+
     assert 'response' in profile, profile
     profile = profile['response'][0]
     log.debug('vk profile: %s', pformat(profile))
@@ -75,6 +85,7 @@ async def vkontakte(request):
         'user_id': str(data['user_id']),
         'email': data.get('email'),
         'name': name,
+        'surname': data.get('last_name'),
         'back_to': request.query.get('state'),
     }
 
@@ -83,9 +94,14 @@ async def google(request):
     if 'error' in request.query:
         return {}
 
+    if HOST_PATH:
+        url = HOST_PATH + str(request.rel_url.with_query(None))
+    else:
+        url = str(request.url.with_query(None))
+
     common_params = {
         'client_id': cfg.GOOGLE_ID,
-        'redirect_uri': str(request.url.with_query(None)),
+        'redirect_uri': url,
     }
 
     # Step 1: redirect to get code
@@ -118,19 +134,15 @@ async def google(request):
 
         # get user profile
         headers = {'Authorization': 'Bearer ' + data['access_token']}
-        url = 'https://www.googleapis.com/plus/v1/people/me'
+        url = "https://www.googleapis.com/oauth2/v1/userinfo"
         async with client.get(url, headers=headers) as resp:
             profile = await resp.json()
 
-    log.debug('g+ profile: %s', pformat(profile))
+    log.debug('google profile: %s', pformat(profile))
 
-    email = None
-    for e in profile.get('emails', []):
-        if e['type'] == 'account':
-            email = e['value']
-            break
-
-    name = profile['displayName'] or profile.get('name', {}).get('givenName')
+    email = profile["email"]
+    name = profile.get('given_name', "anonymous")
+    surname = profile.get("family_name")
     if not name:
         if email:
             name = email.split('@')[0]
@@ -140,6 +152,7 @@ async def google(request):
         'user_id': profile['id'],
         'email': email,
         'name': name,
+        'surname': surname,
         'back_to': request.query.get('state'),
     }
 
@@ -148,9 +161,14 @@ async def facebook(request):
     if 'error' in request.query:
         return {}
 
+    if HOST_PATH:
+        url = HOST_PATH + str(request.rel_url.with_query(None))
+    else:
+        url = str(request.url.with_query(None))
+
     common_params = {
         'client_id': cfg.FACEBOOK_ID,
-        'redirect_uri': str(request.url.with_query(None)),
+        'redirect_uri': url,
     }
 
     # Step 1: redirect to get code
@@ -198,5 +216,6 @@ async def facebook(request):
         'user_id': profile['id'],
         'email': email,
         'name': name,
+        'surname': profile.get("last_name"),
         'back_to': request.query.get('state'),
     }

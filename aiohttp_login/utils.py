@@ -1,3 +1,4 @@
+import os
 from os.path import join
 import string
 import random
@@ -5,14 +6,20 @@ from logging import getLogger
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 
+import jwt
+
 from aiohttp.web import HTTPFound
-from aiohttp_session import get_session
+# from aiohttp_session import get_session
 from aiohttp_jinja2 import render_string
 import passlib.hash
 import aiosmtplib
 
 from .cfg import cfg
 
+
+JWT_SECRET = os.environ.get('JWT_SECRET', 'secret')
+JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
+JWT_EXP_DELTA_SECONDS = int(os.environ.get('JWT_EXP_DELTA_SECONDS', 60 * 20))
 
 CHARS = string.ascii_uppercase + string.ascii_lowercase + string.digits
 log = getLogger(__name__)
@@ -56,14 +63,35 @@ def is_confirmation_expired(confirmation):
 
 
 async def authorize_user(request, user):
-    session = await get_session(request)
-    session[cfg.SESSION_USER_KEY] = cfg.STORAGE.user_session_id(user)
+    user_id = cfg.STORAGE.user_session_id(user)
+    role = await cfg.STORAGE.get_user_role(user["email"])
+
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.utcnow() + timedelta(seconds=JWT_EXP_DELTA_SECONDS),
+        'username': user["name"],
+        'email': user["email"],
+        'surname': user["surname"],
+        'role': role["role"]
+    }
+    jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
+
+    #session = await get_session(request)
+    #session[cfg.SESSION_USER_KEY] = cfg.STORAGE.user_session_id(user)
+
+    return jwt_token
 
 
 async def get_cur_user_id(request):
-    session = await get_session(request)
-
-    user_id = session.get(cfg.SESSION_USER_KEY)
+    # session = await get_session(request)
+    # user_id = session.get(cfg.SESSION_USER_KEY)
+    token = request.cookies.get('jwt')
+    try:
+        decoded = jwt.decode(token, JWT_SECRET, [JWT_ALGORITHM])
+        user_id = decoded.get("user_id")
+    except Exception as e:
+        log.error('Token decoding failed', exc_info=e)
+        user_id = None
     while user_id:
         if not isinstance(user_id, str):
             log.error('Wrong type of user_id in session')
@@ -75,17 +103,17 @@ async def get_cur_user_id(request):
 
         return user_id
 
-    if cfg.SESSION_USER_KEY in session:
-        del session['user']
+    # if cfg.SESSION_USER_KEY in session:
+    #    del session['user']
 
 
 async def get_cur_user(request):
     user_id = await get_cur_user_id(request)
     if user_id:
         user = await cfg.STORAGE.get_user({'id': user_id})
-        if not user:
-            session = await get_session(request)
-            del session['user']
+        # if not user:
+        #    session = await get_session(request)
+        #    del session['user']
         return user
 
 
@@ -158,5 +186,17 @@ async def render_and_send_mail(request, to, template, context=None):
 def themed(template):
     return join(cfg.THEME, template)
 
+
 def common_themed(template):
     return join(cfg.COMMON_THEME, template)
+
+
+def api_call_count_cache(redis, key):
+
+    if redis.exists(key):
+        count = redis.get(key) + 1
+        redis.set(key, count, keepttl=True)
+        return count
+    else:
+        redis.setex(key, timedelta(minutes=cfg.API_CALL_LIMIT_EXPIRATION_TIME), value=1)
+        return 1
