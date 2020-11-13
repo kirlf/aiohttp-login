@@ -3,6 +3,7 @@ Response: {
     user_id: str,
     email: str or None,
     name: str,
+    surname: str or None,
     back_url: str of None
 } or {} if error occured
 '''
@@ -75,8 +76,7 @@ async def vkontakte(request):
     assert 'response' in profile, profile
     profile = profile['response'][0]
     log.debug('vk profile: %s', pformat(profile))
-    name = (profile['screen_name'] or profile['nickname']
-            or profile['first_name'])
+    name = profile.get('first_name')
     if not name and 'email' in data:
         name = data['email'].split('@')[0]
     if not name:

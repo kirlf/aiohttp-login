@@ -194,7 +194,7 @@ def common_themed(template):
 def api_call_count_cache(redis, key):
 
     if redis.exists(key):
-        count = redis.get(key) + 1
+        count = int(redis.get(key)) + 1
         redis.set(key, count, keepttl=True)
         return count
     else:

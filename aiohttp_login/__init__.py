@@ -70,3 +70,7 @@ def setup(app, storage, config=None):
     router = add_resource('/auth/jwt_verification',
                           name='jwt_verification')
     router.add_route('GET', handlers.verify_token)
+
+    router = add_resource('/auth/check_call_limits',
+                          name="check_call_limits")
+    router.add_route("GET", handlers.check_call_limits)
