@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # noqa
 
 import pytest
@@ -18,13 +19,16 @@ from aiohttp_login.asyncpg_storage import AsyncpgStorage
 from aiohttp_login.motor_storage import MotorStorage
 from aiohttp_login import cfg, url_for, restricted_api
 
-
-DATABASE = 'aiohttp_login_tests'
+USER = os.environ.get("POSTGRES_USER", "postgres")
+PWD = os.environ.get("POSTGRES_PASSWORD", "postgres")
+DATABASE = os.environ.get("PGDATABASE", 'aiohttp_login_tests')
+HOST = os.environ.get("PGHOST", "localhost")
+PORT = int(os.environ.get("PGPORT", '5432'))
 
 
 def pytest_generate_tests(metafunc):
     if 'client' in metafunc.fixturenames:
-        metafunc.parametrize('client', ['asyncpg', 'motor'], indirect=True)
+        metafunc.parametrize('client', ['asyncpg'], indirect=True)
 
 
 async def create_app(loop, db):
@@ -39,8 +43,10 @@ async def create_app(loop, db):
     )
 
     if db == 'asyncpg':
-        pool = await asyncpg.create_pool(
-            dsn='postgres:///' + DATABASE, loop=loop)
+        pool = await asyncpg.create_pool(user=USER, password=PWD,
+                                         database=DATABASE, host=HOST, port=PORT,
+                                         loop=loop)
+
         storage = AsyncpgStorage(pool)
     elif db == 'motor':
         app['db'] = AsyncIOMotorClient(io_loop=loop)[DATABASE]
@@ -107,6 +113,8 @@ async def log_client_in(client, user_data=None):
     r = await client.post(url, data={
         'email': user['email'],
         'password': user['raw_password'],
+        'name': user["name"],
+        'role': user["role"],
         'csrf_token': await get_csrf(r),
     })
     assert cfg.MSG_LOGGED_IN in await r.text()
@@ -142,6 +150,7 @@ async def create_user(data=None):
     params = {
         'name': get_random_string(10),
         'email': '{}@gmail.com'.format(get_random_string(10)),
+        'role': "registered",
         'password': encrypt_password(password)
     }
     params.update(data)

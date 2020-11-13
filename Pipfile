@@ -1,0 +1,26 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+aiohttp = "*"
+aiohttp-jinja2 = "*"
+aiohttp-session = {extras = ["secure"], version = "*"}
+passlib = "*"
+aiosmtplib = "*"
+flake8 = "*"
+pytest = "*"
+pytest-aiohttp = "*"
+asyncpg = "*"
+motor = "*"
+pyandoc = "*"
+WTForms = "*"
+jinja_app_loader = "*"
+pyjwt = "*"
+email-validator = "*"
+
+[requires]
+python_version = "3.7"

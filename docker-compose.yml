@@ -1,0 +1,42 @@
+# docker-compose.yml
+version: '3.5'
+
+x-logging:
+  &stdout_logging
+  options:
+    max-size: ${LOG_MAX_SIZE:-5m}
+    max-file: ${LOG_MAX_FILE:-1}
+  driver: json-file
+
+services:
+
+  auth_test:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATABASE: aiohttp_login_test
+      PGHOST: pgsql_test
+    links:
+      - pgsql_test
+    ports:
+      - 8229:8080
+    logging: *stdout_logging
+    depends_on:
+      - pgsql_test
+
+  pgsql_test:
+    image: postgres
+    restart: always
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_DB: aiohttp_login_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./tests/pgsql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+

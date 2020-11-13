@@ -162,8 +162,9 @@ async def login(request):
         """ JWT generating """
 
         try:
-            url = request.cookies.get('req_url')
-        except:
+            url = request.cookies['req_url']
+        except Exception as exc:
+            print("req_url does not exists! Exception: {exc}".format(exc=str(exc)))
             url = request.query.get(cfg.BACK_URL_QS_KEY, cfg.LOGIN_REDIRECT)
 
         redirect_v = redirect(url)
