@@ -1,10 +1,3 @@
-language: python
-python:
-  - 3.7
-
-stages:
-  - test
-
 env:
   - DOCKER_COMPOSE_VERSION=3.5
 
@@ -14,7 +7,7 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
 
-test_library:
-  stage: test
-  script:
-    - docker-compose up --build --abort-on-container-exit
+jobs:
+  include:
+    - stage: test_library
+      script: docker-compose up --build --abort-on-container-exit
