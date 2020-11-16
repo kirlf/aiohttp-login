@@ -149,6 +149,8 @@ async def create_user(data=None):
     password = get_random_string(10)
     params = {
         'name': get_random_string(10),
+        "surname": get_random_string(10),
+        "company": get_random_string(10),
         'email': '{}@gmail.com'.format(get_random_string(10)),
         'role': "registered",
         'password': encrypt_password(password)

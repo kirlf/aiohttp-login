@@ -123,7 +123,6 @@ async def registration(request):
             await db.delete_confirmation(confirmation)
             await db.delete_user(user)
             break
-
         return redirect('auth_registration_requested')
 
     return render_template(themed('registration.html'), request, {

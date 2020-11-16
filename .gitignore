@@ -8,3 +8,5 @@
 /example/.env
 /example/settings.py
 /example/deploy
+.idea
+
