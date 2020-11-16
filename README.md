@@ -83,7 +83,7 @@ aiohttp_login.setup(app, storage, {
 })
 ```
 
-That's all. Look at the [live example][example] and its code in the
+That's all. Look at the code in the
 [example][example-repo] folder.
 Full list of available settings you can find in
 [aiohttp_login/cfg.py][cfg] file.
