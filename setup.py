@@ -38,16 +38,16 @@ install_requires = [
 
 short, desc = get_description()
 setup(
-    version='1.4.0',
-    name='aiohttp-login',
-    url='https://github.com/imbolc/aiohttp-login',
+    version='1.4.1',
+    name='aiohttp-login-jwt',
+    url='https://github.com/kirlf/aiohttp-login',
     description=short,
     long_description=desc,
 
     packages=['aiohttp_login'],
 
-    author='Imbolc',
-    author_email='imbolc@imbolc.name',
+    author='Imbolc, Vladimir Fadeev',
+    author_email='vovenur@gmail.com',
     license='ISC',
 
     classifiers=[
