@@ -1,3 +1,11 @@
+> This fork of imbolc/aiohttp-login is developed for the based on **JWT** tokens registration and login procedures. 
+>
+> Moreover, the following options are added into the `cfg.py` for the contained in JWT roles:
+> - `"ROLES_API_BLACK_LIST": {}` - for the configuration of forbiden endpoints for certain roles;
+> - `"ROLES_API_LIMITS": {}` - for the configuration of API calls limits for certain roles;
+> - `"CACHE"` - Redis or KeyDB object for calls counting (cache storage) (default `None` that means no restrictions);
+> - `"API_CALL_LIMIT_EXPIRATION_TIME"` - time interval in minutes within which number calls should be restricted (default `60`). 
+
 aiohttp-login
 =============
 Registration and authorization (including social) for aiohttp apps
