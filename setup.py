@@ -40,7 +40,7 @@ short, desc = get_description()
 setup(
     version='1.4.1',
     name='aiohttp-login-jwt',
-    url='https://github.com/kirlf/aiohttp-login',
+    url='https://github.com/kirlf/aiohttp-login-jwt',
     description=short,
     long_description=desc,
 
