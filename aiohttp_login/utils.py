@@ -16,11 +16,6 @@ import aiosmtplib
 
 from .cfg import cfg
 
-
-JWT_SECRET = os.environ.get('JWT_SECRET', 'secret')
-JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
-JWT_EXP_DELTA_SECONDS = int(os.environ.get('JWT_EXP_DELTA_SECONDS', 60 * 20))
-
 CHARS = string.ascii_uppercase + string.ascii_lowercase + string.digits
 log = getLogger(__name__)
 
@@ -65,7 +60,9 @@ def is_confirmation_expired(confirmation):
 async def authorize_user(request, user):
     user_id = cfg.STORAGE.user_session_id(user)
     role = await cfg.STORAGE.get_user_role(user["email"])
-
+    JWT_SECRET = os.environ['JWT_SECRET']
+    JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
+    JWT_EXP_DELTA_SECONDS = int(os.environ.get('JWT_EXP_DELTA_SECONDS', 60 * 20))
     payload = {
         'user_id': user_id,
         'exp': datetime.utcnow() + timedelta(seconds=JWT_EXP_DELTA_SECONDS),
@@ -74,6 +71,7 @@ async def authorize_user(request, user):
         'surname': user["surname"],
         'role': role["role"]
     }
+
     jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
 
     #session = await get_session(request)
@@ -86,6 +84,8 @@ async def get_cur_user_id(request):
     # session = await get_session(request)
     # user_id = session.get(cfg.SESSION_USER_KEY)
     token = request.cookies.get('jwt')
+    JWT_SECRET = os.environ['JWT_SECRET']
+    JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
     try:
         decoded = jwt.decode(token, JWT_SECRET, [JWT_ALGORITHM])
         user_id = decoded.get("user_id")
