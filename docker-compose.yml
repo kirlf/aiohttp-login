@@ -19,6 +19,7 @@ services:
       POSTGRES_PASSWORD: postgres
       PGDATABASE: aiohttp_login_test
       PGHOST: pgsql_test
+      JWT_SECRET: test_secret
     links:
       - pgsql_test
     ports:
